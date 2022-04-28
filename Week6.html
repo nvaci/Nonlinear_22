@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Week 6: Nonlinear models</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Dr Nemanja Vaci" />
+    <script src="libs/header-attrs-2.11/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="my-theme.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center
+background-image: url("waves2.png")
+background-size: contain
+---
+
+&lt;style type="text/css"&gt;
+body, td {
+   font-size: 15px;
+}
+code.r{
+  font-size: 15px;
+}
+pre {
+  font-size: 20px
+}
+.huge .remark-code { /*Change made here*/
+  font-size: 200% !important;
+}
+.tiny .remark-code { /*Change made here*/
+  font-size: 80% !important;
+}
+
+
+&lt;/style&gt;
+
+## Press record
+
+---
+
+## Regression
+Gaussian distribution:
+`\(y_{i} \sim \mathcal{N^{iid}}(\mu_{i},\sigma)\)` &lt;br/&gt; &lt;br/&gt;
+`\(\mu_{i} = \alpha+\beta*x_i\)` &lt;br/&gt;&lt;br/&gt; 
+Model mean and standard deviation &lt;br/&gt; &lt;br/&gt; 
+&lt;br/&gt;
+&lt;br/&gt;
+a) Errors: `\(\mathcal{N}^{iid}(0,\sigma)\)` &lt;br/&gt; &lt;br/&gt;
+b) __Linearity__ and additivity &lt;br/&gt; &lt;br/&gt;
+c) Validity &lt;br/&gt; &lt;br/&gt;
+d) Lack of perfect multicolinearity &lt;br/&gt; &lt;br/&gt;
+
+---
+
+## Nonlinearity
+
+Non-linear relationship between dependent and independent variables: &lt;br/&gt;&lt;br/&gt;
+J or quadratic relationship between concepts &lt;br/&gt;
+
+&lt;img src="ALCognition.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Nonlinearity
+
+Non-linear relationship between dependent and independent variables: &lt;br/&gt;&lt;br/&gt;
+Skill acquisition, loss of heating from heaters, and even loss memory over time &lt;br/&gt;&lt;br/&gt;
+
+&lt;img src="PowerLaw.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Nonlinearity
+
+Non-linear relationship between dependent and independent variables: &lt;br/&gt;&lt;br/&gt;
+No strong assumptions on the functional form of the curve &lt;br/&gt;
+
+&lt;img src="MouseMoves.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Methods to model nonlinearity
+
+Polynomial regression &lt;br/&gt;
+
+`\(y_i = \alpha+\beta_1*x_i+\beta_2*x_i^2+\beta_3*x_i^3+\epsilon_i\)` &lt;br/&gt;&lt;br/&gt;
+ 
+Mathematical equations &lt;br/&gt;
+
+`\(y_i = u-ax^c +\epsilon_i\)` &lt;br/&gt;&lt;br/&gt;
+
+Generalized additive models
+
+`\(y_i = \alpha + f(x) +\epsilon_i\)` &lt;br/&gt;&lt;br/&gt;
+
+---
+
+## Data
+
+Lifespan changes in chess performance:
+
+
+```r
+chess&lt;-read.table('ChessDevelopment.txt',sep='\t', header=T)
+par(mfrow=c(1,1), bty='n',mar = c(5, 4, .1, .1), cex=1.1, pch=16)
+plot(chess$Age, chess$Rating)
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-4-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Polynomial regression
+
+`\(y_i = \alpha+\beta_1*x_i+\epsilon_i\)`
+
+
+```r
+lmLin&lt;-lm(Rating~Age, data=chess)
+summary(lmLin)
+```
+
+```
+## 
+## Call:
+## lm(formula = Rating ~ Age, data = chess)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1527.90  -233.12    -8.08   204.67   956.57 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 1495.9720    12.5213  119.47   &lt;2e-16 ***
+## Age            3.6583     0.3241   11.29   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 367.9 on 4706 degrees of freedom
+## Multiple R-squared:  0.02636,	Adjusted R-squared:  0.02615 
+## F-statistic: 127.4 on 1 and 4706 DF,  p-value: &lt; 2.2e-16
+```
+
+---
+
+## Fitting the function: linear effect
+
+
+```r
+par(mfrow=c(1,1), bty='n',mar = c(5, 4, .1, .1), cex=1.1, pch=16)
+plot(chess$Age, chess$Rating)
+x=10:80
+y=coefficients(lmLin)[1]+coefficients(lmLin)[2]*x
+lines(x,y, col='red',lwd=3)
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-6-1.png" style="display: block; margin: auto;" /&gt;
+---
+
+## Polynomial regression
+
+`\(y_i = \alpha+\beta_1*x_i+\beta_2*x_i^2+\epsilon_i\)`
+
+
+```r
+lmQuad&lt;-lm(Rating~poly(Age, degree=2, raw=T), data=chess)
+summary(lmQuad)
+```
+
+```
+## 
+## Call:
+## lm(formula = Rating ~ poly(Age, degree = 2, raw = T), data = chess)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1236.94  -208.40   -17.95   195.85   911.05 
+## 
+## Coefficients:
+##                                  Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                     773.95806   25.33560   30.55   &lt;2e-16 ***
+## poly(Age, degree = 2, raw = T)1  48.47395    1.43617   33.75   &lt;2e-16 ***
+## poly(Age, degree = 2, raw = T)2  -0.56456    0.01771  -31.88   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 333.6 on 4705 degrees of freedom
+## Multiple R-squared:  0.1993,	Adjusted R-squared:  0.199 
+## F-statistic: 585.6 on 2 and 4705 DF,  p-value: &lt; 2.2e-16
+```
+
+---
+
+## Fitting the function: Quadratic effect
+
+
+```r
+par(mfrow=c(1,1), bty='n',mar = c(5, 4, .1, .1), cex=1.1, pch=16)
+plot(chess$Age, chess$Rating)
+x=10:80
+y=coefficients(lmQuad)[1]+coefficients(lmQuad)[2]*x+coefficients(lmQuad)[3]*x^2
+lines(x,y, col='red',lwd=3)
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-8-1.png" style="display: block; margin: auto;" /&gt;
+---
+
+## Polynomial regression
+
+`\(y_i = \alpha+\beta_1*x_i+\beta_2*x_i^2+\beta_3*x_i^3+\epsilon_i\)`
+
+
+```r
+lmCub&lt;-lm(Rating~poly(Age, degree=3, raw=T), data=chess)
+summary(lmCub)
+```
+
+```
+## 
+## Call:
+## lm(formula = Rating ~ poly(Age, degree = 3, raw = T), data = chess)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -1310.80  -196.03   -14.35   174.44   875.08 
+## 
+## Coefficients:
+##                                   Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                     -4.140e+02  5.140e+01  -8.053 1.01e-15 ***
+## poly(Age, degree = 3, raw = T)1  1.655e+02  4.691e+00  35.284  &lt; 2e-16 ***
+## poly(Age, degree = 3, raw = T)2 -3.844e+00  1.270e-01 -30.261  &lt; 2e-16 ***
+## poly(Age, degree = 3, raw = T)3  2.705e-02  1.039e-03  26.039  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 311.9 on 4704 degrees of freedom
+## Multiple R-squared:  0.3002,	Adjusted R-squared:  0.2997 
+## F-statistic: 672.6 on 3 and 4704 DF,  p-value: &lt; 2.2e-16
+```
+
+---
+
+## Fitting the function: Cubic effect
+
+
+```r
+par(mfrow=c(1,1), bty='n',mar = c(5, 4, .1, .1), cex=1.1, pch=16)
+plot(chess$Age, chess$Rating)
+x=10:80
+CubFit=coefficients(lmCub)[1]+coefficients(lmCub)[2]*x+coefficients(lmCub)[3]*x^2+coefficients(lmCub)[4]*x^3
+lines(x,CubFit, col='red',lwd=3)
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-10-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Comparison of the model fit
+
+
+```r
+anova(lmLin,lmQuad,lmCub)
+```
+
+```
+## Analysis of Variance Table
+## 
+## Model 1: Rating ~ Age
+## Model 2: Rating ~ poly(Age, degree = 2, raw = T)
+## Model 3: Rating ~ poly(Age, degree = 3, raw = T)
+##   Res.Df       RSS Df Sum of Sq       F    Pr(&gt;F)    
+## 1   4706 636813227                                   
+## 2   4705 523691481  1 113121747 1162.57 &lt; 2.2e-16 ***
+## 3   4704 457714839  1  65976641  678.05 &lt; 2.2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+```r
+AIC(lmLin,lmQuad,lmCub)
+```
+
+```
+##        df      AIC
+## lmLin   3 68991.60
+## lmQuad  4 68072.84
+## lmCub   5 67440.87
+```
+
+---
+## Mixed-effect polynomial: random intercept
+
+
+&lt;style type="text/css"&gt;
+pre {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+pre[class] {
+  max-height: 100px;
+}
+&lt;/style&gt;
+
+&lt;style type="text/css"&gt;
+.scroll-100 {
+  max-height: 100px;
+  overflow-y: auto;
+  background-color: inherit;
+}
+&lt;/style&gt;
+
+
+```r
+require(lme4)
+lmerCub&lt;-lmer(Rating~poly(Age, degree=3, raw=T)+(1|Player), data=chess)
+print(summary(lmerCub), cor=F)
+```
+
+```
+## Linear mixed model fit by REML ['lmerMod']
+## Formula: Rating ~ poly(Age, degree = 3, raw = T) + (1 | Player)
+##    Data: chess
+## 
+## REML criterion at convergence: 57150.8
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -7.8106 -0.4490  0.0107  0.4885  4.6667 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  Player   (Intercept) 91498    302.49  
+##  Residual              8106     90.03  
+## Number of obs: 4708, groups:  Player, 300
+## 
+## Fixed effects:
+##                                   Estimate Std. Error t value
+## (Intercept)                     -6.645e+02  3.692e+01  -18.00
+## poly(Age, degree = 3, raw = T)1  1.657e+02  2.827e+00   58.61
+## poly(Age, degree = 3, raw = T)2 -3.647e+00  7.362e-02  -49.54
+## poly(Age, degree = 3, raw = T)3  2.456e-02  5.785e-04   42.46
+## fit warnings:
+## Some predictor variables are on very different scales: consider rescaling
+```
+
+---
+## Cubic with random intercept
+
+
+```r
+par(mfrow=c(1,1), bty='n',mar = c(5, 4, .1, .1), cex=1.1, pch=16)
+plot(chess$Age, chess$Rating)
+CubRint=fixef(lmerCub)[1]+fixef(lmerCub)[2]*x+fixef(lmerCub)[3]*x^2+fixef(lmerCub)[4]*x^3
+lines(x,CubFit, col='red',lwd=3)
+lines(x,CubRint, col='blue',lwd=3)
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-15-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+## Mixed-effect polynomial: random intercept and linear slope
+
+
+```r
+lmerCub2&lt;-lmer(Rating~poly(Age, degree=3, raw=T)+(1+Age|Player), data=chess)
+par(mfrow=c(1,1), bty='n',mar = c(5, 4, .1, .1), cex=1.1, pch=16)
+plot(chess$Age, chess$Rating)
+CubRintlin=fixef(lmerCub2)[1]+fixef(lmerCub2)[2]*x+fixef(lmerCub2)[3]*x^2+fixef(lmerCub2)[4]*x^3
+lines(x,CubFit, col='red',lwd=3)
+lines(x,CubRint, col='blue',lwd=3)
+lines(x,CubRintlin, col='green',lwd=3)
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-16-1.png" style="display: block; margin: auto;" /&gt;
+---
+## Mathematical functions
+Predefined functions - we have a strong assumption on the possible functional form of the data &lt;br/&gt;
+
+Power-law learning curve: `\(y_i = u-ax^c +\epsilon_i\)` &lt;br/&gt;
+
+_u_ - upper limit (asymptote) &lt;br/&gt;
+_a_ - difference initial performance from the upper limit &lt;br/&gt;
+_c_ - learning rate (slope)  &lt;br/&gt;
+
+&lt;img src="PowerLaw.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Subsetting the data
+
+Pre-peak increase: &lt;br/&gt;
+
+
+```r
+chess2&lt;-chess[chess$Age&lt;=35,]
+par(mfrow=c(1,1), bty='n',mar = c(5, 4, .1, .1), cex=1.1, pch=16)
+plot(chess2$Age, chess2$Rating)
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-18-1.png" style="display: block; margin: auto;" /&gt;
+---
+## Power-law function
+
+
+```r
+u_init  &lt;-  max(chess$Rating)*1.2 
+a_init  &lt;-  u_init
+c_init  &lt;-  -0.30
+PowerLaw &lt;- nls(Rating~u-a*(Age^c),start=list(u=u_init,a=a_init,c=c_init),data=chess2)
+summary(PowerLaw)
+```
+
+```
+## 
+## Formula: Rating ~ u - a * (Age^c)
+## 
+## Parameters:
+##     Estimate Std. Error t value Pr(&gt;|t|)    
+## u  2089.6297    42.9628   48.64  &lt; 2e-16 ***
+## a 51314.5649 13363.3621    3.84 0.000126 ***
+## c    -1.5527     0.1178  -13.18  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 341.3 on 2710 degrees of freedom
+## 
+## Number of iterations to convergence: 14 
+## Achieved convergence tolerance: 2.837e-06
+```
+---
+## Power-law function: fit
+
+
+```r
+chessPred=data.frame(Age=10:35)
+chessPred$Power=predict(PowerLaw, newdata = chessPred)
+par(mfrow=c(1,1), bty='n',mar = c(5, 4, .1, .1), cex=1.1, pch=16)
+plot(chess2$Age, chess2$Rating)
+lines(chessPred$Age,chessPred$Power, col='red',lwd=3)
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-20-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Logistic growth model
+
+Logistic growth model: `\(y_i = \frac{u}{1+a*e^{c*x}}\)` &lt;br/&gt;
+
+- `\(\frac{u}{1+a}\)` - initial value
+- u - the carrying capacity (asymptote)
+- b - rate of growth (slope)
+
+&lt;img src="Growth.jpg" width="50%" style="display: block; margin: auto;" /&gt;
+
+---
+## Logistic growth model
+
+
+```r
+LogGrowth&lt;- nls(Rating ~ u / (1 + a*exp(c * Age)), start=list(u=1900,a=500,c=c_init), data=chess2)
+summary(LogGrowth)
+```
+
+```
+## 
+## Formula: Rating ~ u/(1 + a * exp(c * Age))
+## 
+## Parameters:
+##     Estimate Std. Error t value Pr(&gt;|t|)    
+## u 1843.74102   11.80130  156.23  &lt; 2e-16 ***
+## a   20.74373    3.62640    5.72 1.18e-08 ***
+## c   -0.25589    0.01236  -20.70  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 337.1 on 2710 degrees of freedom
+## 
+## Number of iterations to convergence: 7 
+## Achieved convergence tolerance: 4.897e-06
+```
+
+---
+
+## Logistic growth: fit
+
+
+```r
+chessPred$Growth=predict(LogGrowth, newdata = chessPred)
+par(mfrow=c(1,1), bty='n', mar = c(5, 4, .1, .1), cex=1.1, pch=16)
+plot(chess2$Age, chess2$Rating)
+lines(chessPred$Age, chessPred$Power, col='red', lwd=3)
+lines(chessPred$Age,chessPred$Growth, col='blue',lwd=3)
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-23-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Model comparison
+
+
+```r
+AIC(PowerLaw, LogGrowth)
+```
+
+```
+##           df      AIC
+## PowerLaw   4 39353.13
+## LogGrowth  4 39285.75
+```
+
+```r
+BIC(PowerLaw, LogGrowth)
+```
+
+```
+##           df      BIC
+## PowerLaw   4 39376.76
+## LogGrowth  4 39309.38
+```
+
+---
+## Mixed-effect power-law
+
+
+```r
+power=deriv(~u-a*Age^c, namevec=c('u','a','c'), function.arg=c('Age','u','a','c'))
+fit.power=nlmer(Rating ~ power(Age, u,a,c) ~ (u|Player),start=list(nlpars=c(u=2089.6297,a=51314.5703,c=-1.5527)),data=chess2)
+summary(fit.power)
+```
+
+```
+## Nonlinear mixed model fit by maximum likelihood  ['nlmerMod']
+## Formula: Rating ~ power(Age, u, a, c) ~ (u | Player)
+##    Data: chess2
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##  33467.5  33497.1 -16728.8  33457.5     2708 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -5.8240 -0.4238  0.0177  0.4694  5.3162 
+## 
+## Random effects:
+##  Groups   Name Variance Std.Dev.
+##  Player   u    104533   323.32  
+##  Residual        9432    97.12  
+## Number of obs: 2713, groups:  Player, 210
+## 
+## Fixed effects:
+##     Estimate Std. Error t value
+## u  1.848e+03  3.066e+01  60.267
+## a  8.210e+04  1.071e+04   7.664
+## c -1.761e+00  6.111e-02 -28.808
+## 
+## Correlation of Fixed Effects:
+##   u      a     
+## a -0.613       
+## c  0.642 -0.993
+## optimizer (Nelder_Mead) convergence code: 4 (failure to converge in 10000 evaluations)
+## failure to converge in 10000 evaluations
+```
+---
+
+## Mixed-effect power-law: fit
+
+
+```r
+plot(chess2$Age, chess2$Rating)
+PowerRU=1.848e+03-8.210e+04*chessPred$Age^-1.761e+00
+lines(chessPred$Age,chessPred$Power, col='red',lwd=3)
+lines(chessPred$Age,PowerRU, col='blue',lwd=3)
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-26-1.png" style="display: block; margin: auto;" /&gt;
+---
+
+## Double exponential function
+
+
+```r
+nonlin &lt;- function(t, a, b, c) { (a/b) * exp( -(t-c)/b - exp(-(t-c)/b) ) }
+nlsfit &lt;- nls(Rating ~ nonlin(Age, a, b, c), data=chess, start=list(a=2000, b=50, c=35))
+summary(nlsfit)
+```
+
+```
+## 
+## Formula: Rating ~ nonlin(Age, a, b, c)
+## 
+## Parameters:
+##    Estimate Std. Error t value Pr(&gt;|t|)    
+## a 1.783e+05  2.426e+03   73.50   &lt;2e-16 ***
+## b 3.595e+01  5.603e-01   64.17   &lt;2e-16 ***
+## c 3.955e+01  2.776e-01  142.46   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 328.4 on 4705 degrees of freedom
+## 
+## Number of iterations to convergence: 12 
+## Achieved convergence tolerance: 1.135e-06
+```
+
+---
+
+## Double exponential: fit
+
+
+```r
+chessPred2=data.frame(Age=10:80)
+chessPred2$DoubleExp=predict(nlsfit, newdata=chessPred2)
+plot(chess$Age, chess$Rating)
+lines(chessPred2$Age,chessPred2$DoubleExp, col='red',lwd=3)
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-28-1.png" style="display: block; margin: auto;" /&gt;
+---
+## Generalized additive models (GAMs)
+
+We do not have to specify a function, GAM determines it using the data &lt;br/&gt; &lt;br/&gt;
+GAM is trying to optimize the smooth function that describes the relationship between the predictor and dependent variable: &lt;br/&gt;
+
+`\(y_i = \alpha + f(x) +\epsilon_i\)` &lt;br/&gt;&lt;br/&gt;
+
+&lt;img src="MouseMoves.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## GAM model
+
+
+```r
+require(mgcv)
+gam1&lt;-gam(Rating~s(Age, bs='cs'), data=chess)
+summary(gam1)
+```
+
+```
+## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## Rating ~ s(Age, bs = "cs")
+## 
+## Parametric coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 1623.695      4.442   365.6   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Approximate significance of smooth terms:
+##          edf Ref.df     F p-value    
+## s(Age) 7.652      9 258.3  &lt;2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## R-sq.(adj) =  0.332   Deviance explained = 33.3%
+## GCV =  93049  Scale est. = 92878     n = 4708
+```
+
+---
+
+## GAM model: fit
+
+
+```r
+require(itsadug)
+plot_smooth(gam1, view='Age', rm.ranef=F)
+```
+
+```
+## Summary:
+## 	* Age : numeric predictor; with 30 values ranging from 8.000000 to 79.000000.
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-31-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Nonlinear interactions
+
+
+```r
+gam2&lt;-gam(Rating~te(Age,Stale), data=chess)
+fvisgam(gam2, view=c('Age','Stale'), rm.ranef = F, too.far = .1)
+```
+
+```
+## Summary:
+## 	* Age : numeric predictor; with 30 values ranging from 8.000000 to 79.000000. 
+## 	* Stale : numeric predictor; with 30 values ranging from 0.000000 to 8.000000.
+```
+
+&lt;img src="Week6_files/figure-html/unnamed-chunk-32-1.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Tutorials
+
+For further reading check: 
+- Data Analysis Using Regression and Multilevel/Hierarchical Models" by Andrew Gelman and Jennifer Hill &lt;br/&gt;&lt;br/&gt;
+
+- van Rij, J., Vaci, N., Wurm, L. H., &amp; Feldman, L. B. (2020). Alternative quantitative methods in psycholinguistics: Implications for theory and design. Word knowledge and word usage: A cross-disciplinary guide to the mental lexicon, 83-126.
+
+- Tutorial by Jacolien Van Rij: https://jacolienvanrij.com/Tutorials/GAMM.html
+
+---
+
+# Thank you for your attention
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"ratio": "16:9",
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
